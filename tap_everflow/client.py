@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import decimal
 import typing as t
+from functools import cached_property
 from importlib import resources
 
 from singer_sdk.authenticators import APIKeyAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.pagination import BaseAPIPaginator  # noqa: TC002
 from singer_sdk.streams import RESTStream
+from typing_extensions import override
 
 if t.TYPE_CHECKING:
     import requests
@@ -31,17 +33,13 @@ class EverflowStream(RESTStream):
 
     url_base = "https://api.eflow.team/v1"
 
-    @property
-    def authenticator(self) -> APIKeyAuthenticator:
-        """Return a new authenticator object.
-
-        Returns:
-            An authenticator instance.
-        """
+    @override
+    @cached_property
+    def authenticator(self):
         return APIKeyAuthenticator.create_for_stream(
             self,
-            key="x-api-key",
-            value=self.config.get("auth_token", ""),
+            key="X-Eflow-API-Key",
+            value=self.config.get("api_key", ""),
             location="header",
         )
 
