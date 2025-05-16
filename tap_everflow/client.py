@@ -9,7 +9,7 @@ from importlib import resources
 
 from singer_sdk.authenticators import APIKeyAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
-from singer_sdk.pagination import BaseAPIPaginator  # noqa: TC002
+from singer_sdk.pagination import BasePageNumberPaginator
 from singer_sdk.streams import RESTStream
 from typing_extensions import override
 
@@ -54,41 +54,19 @@ class EverflowStream(RESTStream):
         # headers["Private-Token"] = self.config.get("auth_token")  # noqa: ERA001
         return {}
 
-    def get_new_paginator(self) -> BaseAPIPaginator:
-        """Create a new pagination helper instance.
+    @override
+    def get_new_paginator(self):
+        return BasePageNumberPaginator(1)
 
-        If the source API can make use of the `next_page_token_jsonpath`
-        attribute, or it contains a `X-Next-Page` header in the response
-        then you can remove this method.
+    @override
+    def get_url_params(self, context, next_page_token):
+        params = {}
 
-        If you need custom pagination that uses page numbers, "next" links, or
-        other approaches, please read the guide: https://sdk.meltano.com/en/v0.25.0/guides/pagination-classes.html.
-
-        Returns:
-            A pagination helper instance.
-        """
-        return super().get_new_paginator()
-
-    def get_url_params(
-        self,
-        context: Context | None,  # noqa: ARG002
-        next_page_token: t.Any | None,  # noqa: ANN401
-    ) -> dict[str, t.Any]:
-        """Return a dictionary of values to be used in URL parameterization.
-
-        Args:
-            context: The stream context.
-            next_page_token: The next page index or value.
-
-        Returns:
-            A dictionary of URL query parameters.
-        """
-        params: dict = {}
         if next_page_token:
             params["page"] = next_page_token
-        if self.replication_key:
-            params["sort"] = "asc"
-            params["order_by"] = self.replication_key
+
+        params["page_size"] = 2000
+
         return params
 
     def prepare_request_payload(
