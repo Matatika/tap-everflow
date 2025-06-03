@@ -17,23 +17,14 @@ plugins:
     - discover
     - about
     - stream-maps
-
-    # TODO: Declare settings and their types here:
     settings_group_validation:
-    - [username, password]
-
-    # TODO: Declare default configuration values here:
+    - [api_key]
     settings:
-    - name: username
-      label: Username
-      description: The username to use for authentication
-
-    - name: password
+    - name: api_key
       kind: string
-      label: Password
-      description: The password to use for authentication
+      label: API Key
+      description: Everflow network API key
       sensitive: true
-
     - name: start_date
       kind: date_iso8601
       label: Start Date
