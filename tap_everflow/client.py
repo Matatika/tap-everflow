@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import decimal
 import typing as t
+from datetime import timezone
 from functools import cached_property
 
 from singer_sdk.authenticators import APIKeyAuthenticator
@@ -111,3 +112,17 @@ class EverflowStream(RESTStream):
         """
         # TODO: Delete this method if not needed.
         return row
+
+    @cached_property
+    def utc_timezone_id(self):
+        """Resolve UTC timezone ID from API."""
+        response = self.requests_session.get(f"{self.url_base}/meta/timezones")
+        response.raise_for_status()
+        timezones: list[dict] = response.json()["timezones"]
+
+        for tz in timezones:
+            if tz["timezone"] == str(timezone.utc):
+                return tz["timezone_id"]
+
+        msg = "No UTC timezone found"
+        raise RuntimeError(msg)

@@ -34,6 +34,7 @@ class TapEverflow(Tap):
     def discover_streams(self):
         return [
             streams.OffersStream(self),
+            streams.ConversionsStream(self),
         ]
 
 
