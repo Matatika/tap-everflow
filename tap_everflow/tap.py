@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from singer_sdk import Tap
 from singer_sdk import typing as th  # JSON schema typing helpers
 from typing_extensions import override
@@ -26,7 +28,9 @@ class TapEverflow(Tap):
         th.Property(
             "start_date",
             th.DateTimeType,
+            title="Start Date",
             description="The earliest record date to sync",
+            default=(datetime.now(tz=timezone.utc) - timedelta(days=365)).isoformat(),
         ),
     ).to_dict()
 
