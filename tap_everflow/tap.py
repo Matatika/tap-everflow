@@ -35,6 +35,7 @@ class TapEverflow(Tap):
         return [
             streams.OffersStream(self),
             streams.ConversionsStream(self),
+            streams.ClicksStream(self),
         ]
 
 

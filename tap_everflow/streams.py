@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from functools import cached_property
 
 from singer_sdk import typing as th
 from typing_extensions import override
 
 from tap_everflow.client import EverflowStream
+from tap_everflow.pagination import ClicksPaginator
 
 
 class OffersStream(EverflowStream):
@@ -224,4 +225,102 @@ class ConversionsStream(EverflowStream):
             "timezone_id": self.utc_timezone_id,
             "show_conversions": True,
             "show_events": True,
+        }
+
+
+class ClicksStream(EverflowStream):
+    """Define clicks stream."""
+
+    name = "clicks"
+    primary_keys = ("transaction_id",)
+    replication_key = "unix_timestamp"
+    http_method = "POST"
+    path = "/networks/reporting/clicks/stream"
+    records_jsonpath = "$.clicks[*]"
+
+    @override
+    def get_new_paginator(self):
+        return ClicksPaginator(self)
+
+    @override
+    @cached_property
+    def schema(self):
+        return th.PropertiesList(
+            th.Property("transaction_id", th.StringType),
+            th.Property("is_unique", th.IntegerType),
+            th.Property("unix_timestamp", th.IntegerType),
+            th.Property("tracking_url", th.StringType),
+            th.Property("source_id", th.StringType),
+            th.Property("sub1", th.StringType),
+            th.Property("sub2", th.StringType),
+            th.Property("sub3", th.StringType),
+            th.Property("sub4", th.StringType),
+            th.Property("sub5", th.StringType),
+            th.Property("payout_type", th.StringType),  # CPA, CPC
+            th.Property("revenue_type", th.StringType),  # RPA, RPC
+            th.Property("payout", th.NumberType),
+            th.Property("revenue", th.NumberType),
+            th.Property("referer", th.StringType),
+            th.Property("previous_network_offer_id", th.IntegerType),
+            th.Property("error_code", th.IntegerType),
+            th.Property("project_id", th.StringType),
+            th.Property("user_ip", th.StringType),
+            th.Property("error_message", th.StringType),
+            th.Property("url", th.StringType),
+            th.Property("is_view_through", th.BooleanType),
+            th.Property("is_async", th.BooleanType),
+            th.Property("server_side_url", th.StringType),
+            th.Property("server_side_output", th.StringType),
+            th.Property("custom_landing_page_id", th.IntegerType),
+            th.Property("is_test_mode", th.BooleanType),
+            th.Property("idfa", th.StringType),
+            th.Property("idfa_md5", th.StringType),
+            th.Property("idfa_sha1", th.StringType),
+            th.Property("google_ad_id", th.StringType),
+            th.Property("google_ad_id_md5", th.StringType),
+            th.Property("google_ad_id_sha1", th.StringType),
+            th.Property("android_id", th.StringType),
+            th.Property("android_id_md5", th.StringType),
+            th.Property("android_id_sha1", th.StringType),
+            th.Property("error_filter_id", th.StringType),
+            th.Property("has_conversion", th.BooleanType),
+            th.Property("is_pass_through", th.BooleanType),
+            th.Property("creative_id", th.IntegerType),
+            th.Property("relationship", th.ObjectType(additional_properties=True)),
+            th.Property("coupon_code", th.StringType),
+            th.Property("redirect_method", th.StringType),  # standard
+            th.Property("is_sdk_click", th.BooleanType),
+            th.Property("category_id", th.IntegerType),
+            th.Property("currency_id", th.StringType),
+        ).to_dict()
+
+    @override
+    def prepare_request_payload(self, context, next_page_token):
+        start_value: datetime | int | str = (
+            next_page_token or self.get_starting_replication_key_value(context)
+        )
+
+        if isinstance(start_value, datetime):  # from paginator
+            start_date = start_value
+        elif isinstance(start_value, int):  # from state
+            start_date = datetime.fromtimestamp(start_value, tz=timezone.utc)
+        else:  # from config
+            start_date = datetime.fromisoformat(start_value).astimezone(timezone.utc)
+
+        now = datetime.now(tz=timezone.utc)
+
+        # min from date is ~3 months from the current date, i.e. approx. 90 days
+        # https://developers.everflow.io/docs/network/reporting/raw_clicks/#click-report
+        from_date = max(start_date, now - timedelta(days=90))
+
+        # max to date is 14 days from start date, i.e. period of 2 weeks
+        # https://developers.everflow.io/docs/network/reporting/raw_clicks/#click-report
+        to_date = min(from_date + timedelta(days=14), now)
+
+        self.logger.info("Requesting clicks from %s to %s", from_date, to_date)
+
+        return {
+            "from": from_date.strftime(r"%Y-%m-%d %H:%M:%S"),
+            "to": to_date.strftime(r"%Y-%m-%d %H:%M:%S"),
+            "timezone_id": self.utc_timezone_id,
         }
