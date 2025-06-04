@@ -9,9 +9,10 @@ from functools import cached_property
 
 from singer_sdk.authenticators import APIKeyAuthenticator
 from singer_sdk.helpers.jsonpath import extract_jsonpath
-from singer_sdk.pagination import BasePageNumberPaginator
 from singer_sdk.streams import RESTStream
 from typing_extensions import override
+
+from tap_everflow.pagination import EverflowPaginator
 
 if t.TYPE_CHECKING:
     import requests
@@ -49,7 +50,7 @@ class EverflowStream(RESTStream):
 
     @override
     def get_new_paginator(self):
-        return BasePageNumberPaginator(1)
+        return EverflowPaginator()
 
     @override
     def get_url_params(self, context, next_page_token):

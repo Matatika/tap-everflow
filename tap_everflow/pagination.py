@@ -13,6 +13,29 @@ if TYPE_CHECKING:
     from tap_everflow.streams import ClicksStream
 
 
+class EverflowPaginator(BaseAPIPaginator):
+    """Everflow paginator."""
+
+    @override
+    def __init__(self) -> None:
+        super().__init__(None)
+
+    @override
+    def has_more(self, response):
+        paging = response.json()["paging"]
+
+        page: int = paging["page"]
+        page_size: int = paging["page_size"]
+        total_size: int = paging["total_count"]
+
+        return page_size * page < total_size
+
+    @override
+    def get_next(self, response):
+        paging = response.json()["paging"]
+        return paging["page"] + 1
+
+
 class ClicksPaginator(BaseAPIPaginator):
     """Clicks paginator."""
 
