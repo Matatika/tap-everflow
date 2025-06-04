@@ -8,6 +8,7 @@ from functools import cached_property
 from singer_sdk import typing as th
 from typing_extensions import override
 
+from tap_everflow import schemas
 from tap_everflow.client import EverflowStream
 from tap_everflow.pagination import ClicksPaginator
 
@@ -117,7 +118,150 @@ class OffersStream(EverflowStream):
             th.Property("app_identifier", th.StringType),
             th.Property("is_description_plain_text", th.BooleanType),
             th.Property("is_use_direct_linking", th.BooleanType),
-            th.Property("relationship", th.ObjectType(additional_properties=True)),
+            th.Property(
+                "relationship",
+                th.ObjectType(
+                    th.Property(
+                        "category",
+                        th.ObjectType(
+                            th.Property("network_category_id", th.IntegerType),
+                            th.Property("network_id", th.IntegerType),
+                            th.Property("name", th.StringType),
+                            th.Property("status", th.StringType),  # active
+                            th.Property("time_created", th.IntegerType),
+                            th.Property("time_saved", th.IntegerType),
+                        ),
+                    ),
+                    th.Property(
+                        "labels",
+                        th.ObjectType(
+                            th.Property("total", th.IntegerType),
+                            th.Property("entries", th.ArrayType(th.StringType)),
+                        ),
+                    ),
+                    th.Property(
+                        "payout_revenue",
+                        th.ObjectType(
+                            th.Property("total", th.IntegerType),
+                            th.Property(
+                                "entries",
+                                th.ArrayType(
+                                    th.ObjectType(
+                                        th.Property(
+                                            "network_offer_payout_revenue_id",
+                                            th.IntegerType,
+                                        ),
+                                        th.Property("network_id", th.IntegerType),
+                                        th.Property("network_offer_id", th.IntegerType),
+                                        th.Property("entry_name", th.StringType),
+                                        th.Property(
+                                            "payout_type",
+                                            th.StringType,
+                                        ),  # cpa, cpc
+                                        th.Property("payout_amount", th.NumberType),
+                                        th.Property(
+                                            "payout_percentage", th.IntegerType
+                                        ),
+                                        th.Property(
+                                            "revenue_type",
+                                            th.StringType,
+                                        ),  # rpa, rpc
+                                        th.Property("revenue_amount", th.NumberType),
+                                        th.Property(
+                                            "revenue_percentage", th.IntegerType
+                                        ),
+                                        th.Property("is_default", th.BooleanType),
+                                        th.Property("is_private", th.BooleanType),
+                                        th.Property(
+                                            "is_postback_disabled", th.BooleanType
+                                        ),
+                                        th.Property("is_enforce_caps", th.BooleanType),
+                                        th.Property("time_created", th.IntegerType),
+                                        th.Property(
+                                            "global_advertiser_event_id",
+                                            th.IntegerType,
+                                        ),
+                                        th.Property(
+                                            "is_must_approve_conversion",
+                                            th.BooleanType,
+                                        ),
+                                        th.Property(
+                                            "is_allow_duplicate_conversion",
+                                            th.BooleanType,
+                                        ),
+                                        th.Property(
+                                            "is_email_attribution_default_event",
+                                            th.BooleanType,
+                                        ),
+                                        th.Property(
+                                            "remote_offer_resource",
+                                            th.ObjectType(
+                                                th.Property(
+                                                    "network_offer_id",
+                                                    th.IntegerType,
+                                                ),
+                                                th.Property(
+                                                    "network_id", th.IntegerType
+                                                ),
+                                                th.Property(
+                                                    "resource_type", th.StringType
+                                                ),
+                                                th.Property(
+                                                    "remote_resource_id",
+                                                    th.StringType,
+                                                ),
+                                                th.Property(
+                                                    "resource_id", th.IntegerType
+                                                ),
+                                                th.Property(
+                                                    "last_value_md5",
+                                                    th.StringType,
+                                                ),
+                                                th.Property(
+                                                    "json_config", th.StringType
+                                                ),
+                                                th.Property("json_data", th.StringType),
+                                                th.Property(
+                                                    "time_created", th.IntegerType
+                                                ),
+                                                th.Property(
+                                                    "time_saved", th.IntegerType
+                                                ),
+                                            ),
+                                        ),
+                                    )
+                                ),
+                            ),
+                        ),
+                    ),
+                    th.Property("encoded_value", th.StringType),
+                    th.Property("is_locked_currency", th.BooleanType),
+                    th.Property("channels", th.ArrayType(th.AnyType)),
+                    th.Property(
+                        "channels",
+                        th.ObjectType(
+                            th.Property("total", th.IntegerType),
+                            th.Property("entries", th.ArrayType(th.AnyType)),
+                        ),
+                    ),
+                    th.Property("is_locked_caps_timezone", th.BooleanType),
+                    th.Property("meta", th.ObjectType(additional_properties=True)),
+                    th.Property(
+                        "requirement_kpis",
+                        th.ObjectType(
+                            th.Property("total", th.IntegerType),
+                            th.Property("entries", th.ArrayType(th.AnyType)),
+                        ),
+                    ),
+                    th.Property(
+                        "requirement_tracking_parameters",
+                        th.ObjectType(
+                            th.Property("total", th.IntegerType),
+                            th.Property("entries", th.ArrayType(th.AnyType)),
+                        ),
+                    ),
+                ),
+            ),
             th.Property("is_email_attribution_enabled", th.BooleanType),
             th.Property(
                 "email_attribution_method",
@@ -206,7 +350,19 @@ class ConversionsStream(EverflowStream):
             th.Property("email", th.StringType),
             th.Property("is_view_through", th.BooleanType),
             th.Property("previous_network_offer_id", th.IntegerType),
-            th.Property("relationship", th.ObjectType(additional_properties=True)),
+            th.Property(
+                "relationship",
+                th.ObjectType(
+                    schemas.RelationshipOfferProperty,
+                    schemas.RelationshipAdvertiserProperty,
+                    schemas.RelationshipAccountManagerProperty,
+                    schemas.RelationshipAffiliateProperty,
+                    schemas.RelationshipAffiliateManagerProperty,
+                    schemas.RelationshipQueryParamsProperty,
+                    th.Property("attribution_method", th.StringType),  # unknown
+                    th.Property("usm_data", th.AnyType),
+                ),
+            ),
             th.Property("network_offer_payout_revenue_id", th.IntegerType),
         ).to_dict()
 
@@ -286,7 +442,71 @@ class ClicksStream(EverflowStream):
             th.Property("has_conversion", th.BooleanType),
             th.Property("is_pass_through", th.BooleanType),
             th.Property("creative_id", th.IntegerType),
-            th.Property("relationship", th.ObjectType(additional_properties=True)),
+            th.Property(
+                "relationship",
+                th.ObjectType(
+                    schemas.RelationshipOfferProperty,
+                    schemas.RelationshipAdvertiserProperty,
+                    schemas.RelationshipAccountManagerProperty,
+                    schemas.RelationshipAffiliateProperty,
+                    schemas.RelationshipAffiliateManagerProperty,
+                    th.Property(
+                        "geolocation",
+                        th.ObjectType(
+                            th.Property("country_code", th.StringType),
+                            th.Property("country_name", th.StringType),
+                            th.Property("region_code", th.StringType),
+                            th.Property("region_name", th.StringType),
+                            th.Property("city_name", th.StringType),
+                            th.Property("dma", th.IntegerType),
+                            th.Property("dma_name", th.StringType),
+                            th.Property("timezone", th.StringType),
+                            th.Property("carrier_name", th.StringType),
+                            th.Property("carrier_code", th.IntegerType),
+                            th.Property("organization", th.StringType),
+                            th.Property("isp_name", th.StringType),
+                            th.Property("is_mobile", th.BooleanType),
+                            th.Property("is_proxy", th.BooleanType),
+                            th.Property("postal_code", th.StringType),
+                        ),
+                    ),
+                    th.Property(
+                        "device_information",
+                        th.ObjectType(
+                            th.Property("is_mobile", th.BooleanType),
+                            th.Property("platform_name", th.StringType),
+                            th.Property("os_version", th.StringType),
+                            th.Property("brand", th.StringType),
+                            th.Property("model", th.StringType),
+                            th.Property("is_tablet", th.BooleanType),
+                            th.Property("browser_name", th.StringType),
+                            th.Property("browser_version", th.StringType),
+                            th.Property("device_type", th.StringType),
+                            th.Property("language", th.StringType),
+                            th.Property("http_accept_language", th.StringType),
+                            th.Property("is_robot", th.BooleanType),
+                            th.Property("is_filter", th.BooleanType),
+                        ),
+                    ),
+                    th.Property("http_user_agent", th.StringType),
+                    th.Property("http_accept_language", th.StringType),
+                    schemas.RelationshipQueryParamsProperty,
+                    th.Property("previous_transaction_id", th.StringType),
+                    th.Property("redirect_url", th.StringType),
+                    th.Property("forensiq_score", th.StringType),
+                    th.Property(
+                        "internal_redirect",
+                        th.ObjectType(
+                            th.Property("previous_transaction_id", th.StringType),
+                            th.Property("previous_offer_id", th.IntegerType),
+                            th.Property("is_pay_affiliate", th.BooleanType),
+                            th.Property("is_pass_through", th.BooleanType),
+                            th.Property("network_offer_url_id", th.IntegerType),
+                            th.Property("redirect_count", th.IntegerType),
+                        ),
+                    ),
+                ),
+            ),
             th.Property("coupon_code", th.StringType),
             th.Property("redirect_method", th.StringType),  # standard
             th.Property("is_sdk_click", th.BooleanType),
