@@ -4,39 +4,44 @@
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
-<!--
+[![Python version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FMatatika%2Ftap-everflow%2Fmain%2Fpyproject.toml&query=project.requires-python&label=python)](https://docs.python.org/3/)
+[![License](https://img.shields.io/github/license/Matatika/tap-everflow)](https://github.com/Matatika/tap-everflow/blob/main/LICENSE)
+[![Code style](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fastral-sh%2Fruff%2Fmain%2Fassets%2Fbadge%2Fformat.json)](https://docs.astral.sh/ruff/)
 
-Developer TODO: Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPI repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
+## Overview
+
+`tap-everflow` extracts raw data from the [Everflow Network API](https://developers.everflow.io/docs/network/) for the following resources:
+- [Offers](https://developers.everflow.io/docs/network/offers/)
+- [Clicks](https://developers.everflow.io/docs/network/reporting/raw_clicks/)
+- [Conversions](https://developers.everflow.io/docs/network/reporting/raw_conversions/)
 
 ## Installation
-
-Install from PyPI:
-
-```bash
-pipx install tap-everflow
-```
 
 Install from GitHub:
 
 ```bash
-pipx install git+https://github.com/ORG_NAME/tap-everflow.git@main
-```
+# pip
+pip install git+https://github.com/Matatika/tap-everflow
 
--->
+# pipx
+pipx install git+https://github.com/Matatika/tap-everflow
+
+# poetry
+poetry add git+https://github.com/Matatika/tap-everflow
+
+#uv
+uv tool install git+https://github.com/Matatika/tap-everflow
+uv pip install git+https://github.com/Matatika/tap-everflow
+```
 
 ## Configuration
 
 ### Accepted Config Options
 
-<!--
-Developer TODO: Provide a list of config options accepted by the tap.
-
-This section can be created by copy-pasting the CLI output from:
-
-```
-tap-everflow --about --format=markdown
-```
--->
+Name | Required | Default | Description
+--- | --- | --- | ---
+`api_key` | Yes |  | Everflow network API key
+`start_date` | No | One year before the current date | The earliest record date to sync
 
 A full list of supported settings and capabilities for this
 tap is available by running:
