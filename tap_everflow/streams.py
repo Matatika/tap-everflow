@@ -281,6 +281,7 @@ class OffersStream(EverflowStream):
 
         return row
 
+
 class ConversionsStream(EverflowStream):
     """Define conversions stream."""
 
