@@ -274,6 +274,12 @@ class OffersStream(EverflowStream):
             th.Property("is_soft_cap", th.BooleanType),
         ).to_dict()
 
+    @override
+    def post_process(self, row, context=None):
+        if not row.get("date_live_until"):
+            row["date_live_until"] = None
+
+        return row
 
 class ConversionsStream(EverflowStream):
     """Define conversions stream."""
