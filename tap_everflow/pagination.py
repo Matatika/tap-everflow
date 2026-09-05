@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Meltano.
+
 """Pagination classes for tap-everflow."""
 
 from __future__ import annotations

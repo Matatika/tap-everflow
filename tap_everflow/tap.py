@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Meltano.
+
 """Everflow tap class."""
 
 from __future__ import annotations
