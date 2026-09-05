@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Meltano.
+
 """JSON schema files for the REST API."""
 
 from singer_sdk import typing as th
